@@ -1,0 +1,186 @@
+--[[ 
+    👑 PAINEL DARK GLASS - BELLY LINE EDITION
+    - ESP Lines: Ajustado para a BARRIGA (Centro do Inimigo)
+    - Base: 100% ORIGINAL (420x320, Anime, Botões Ninja)
+    - Visual: Preto Transparente Premium
+]]
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+
+-- Configurações
+getgenv().Aimbot_Lock = false
+getgenv().Aimbot_Smooth = false
+getgenv().ESP_Box = false
+getgenv().ESP_Lines = false
+
+local ScreenGui = Instance.new("ScreenGui", Player.PlayerGui)
+ScreenGui.Name = "KZZ_BASE_PREMIUM"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+
+-- 1. BASE (EXTERIOR - IGUAL À QUE VOCÊ AMOU)
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 420, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -140)
+MainFrame.BackgroundColor3 = Color3.new(0,0,0)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 15)
+
+-- FUNDO ANIME
+local Bg = Instance.new("ImageLabel", MainFrame)
+Bg.Size = UDim2.new(1, 0, 1, 0)
+Bg.Image = "rbxassetid://103203177787578"
+Bg.ScaleType = Enum.ScaleType.Stretch
+Bg.BackgroundTransparency = 0.2 
+Bg.ZIndex = 1
+Instance.new("UICorner", Bg).CornerRadius = UDim.new(0, 15)
+
+-- TÍTULO
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Text = "👑 PAINEL AIMBOT"
+Title.Size = UDim2.new(1, -100, 0, 50)
+Title.Position = UDim2.new(0, 20, 0, 5)
+Title.Font = Enum.Font.GothamBold
+Title.TextColor3 = Color3.new(1,1,1)
+Title.TextSize = 20
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = "Left"
+Title.ZIndex = 5
+
+-- BOTÕES X e -
+local function CreateHeaderBtn(txt, xOffset)
+    local btn = Instance.new("TextButton", MainFrame)
+    btn.Text = txt
+    btn.Size = UDim2.new(0, 32, 0, 32)
+    btn.Position = UDim2.new(1, xOffset, 0, 10)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    btn.BackgroundTransparency = 0.4
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamBold
+    btn.ZIndex = 6
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    return btn
+end
+local CloseBtn = CreateHeaderBtn("X", -45)
+local MinBtn = CreateHeaderBtn("—", -85)
+
+-- CONTAINER DE OPÇÕES
+local BtnContainer = Instance.new("Frame", MainFrame)
+BtnContainer.Size = UDim2.new(0, 260, 0, 200)
+BtnContainer.Position = UDim2.new(0, 20, 0, 80)
+BtnContainer.BackgroundTransparency = 1
+BtnContainer.ZIndex = 5
+local Layout = Instance.new("UIListLayout", BtnContainer)
+Layout.Padding = UDim.new(0, 12)
+
+local function AddToggle(txt, var)
+    local b = Instance.new("TextButton", BtnContainer)
+    b.Size = UDim2.new(1, 0, 0, 45)
+    b.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    b.BackgroundTransparency = 0.8
+    b.Text = "  " .. txt
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 14
+    b.TextXAlignment = Enum.TextXAlignment.Left
+    b.ZIndex = 6
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
+    
+    local Stroke = Instance.new("UIStroke", b)
+    Stroke.Color = Color3.new(1,1,1)
+    Stroke.Transparency = 0.9
+
+    b.MouseButton1Click:Connect(function()
+        getgenv()[var] = not getgenv()[var]
+        b.BackgroundTransparency = getgenv()[var] and 0.4 or 0.8
+        b.BackgroundColor3 = getgenv()[var] and Color3.fromRGB(30, 30, 30) or Color3.fromRGB(0, 0, 0)
+    end)
+end
+
+AddToggle("AIMBOT LOCK", "Aimbot_Lock")
+AddToggle("AIMBOT SMOOTH", "Aimbot_Smooth")
+AddToggle("ESP BOX", "ESP_Box")
+AddToggle("ESP LINES", "ESP_Lines")
+
+-- BOTÃO NINJA
+local Floating = Instance.new("ImageButton", ScreenGui)
+Floating.Size = UDim2.new(0, 65, 0, 65)
+Floating.Position = UDim2.new(0.02, 0, 0.4, 0)
+Floating.Image = "rbxassetid://103203177787578"
+Floating.Visible = false
+Floating.Draggable = true
+Instance.new("UICorner", Floating).CornerRadius = UDim.new(1, 0)
+
+MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false Floating.Visible = true end)
+Floating.MouseButton1Click:Connect(function() MainFrame.Visible = true Floating.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- LÓGICA ESP (LINHA NA BARRIGA)
+local function CreateESP(p)
+    RunService.RenderStepped:Connect(function()
+        if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character.Humanoid.Health > 0 then
+            local hrp = p.Character.HumanoidRootPart
+            
+            -- BOX
+            local box = hrp:FindFirstChild("KZZ_Box") or Instance.new("BillboardGui", hrp)
+            box.Name = "KZZ_Box"; box.AlwaysOnTop = true; box.Size = UDim2.new(4, 0, 6, 0); box.Enabled = getgenv().ESP_Box
+            local f = box:FindFirstChild("F") or Instance.new("Frame", box)
+            f.Name = "F"; f.Size = UDim2.new(1,0,1,0); f.BackgroundTransparency = 1
+            local s = f:FindFirstChild("S") or Instance.new("UIStroke", f)
+            s.Thickness = 1.2; s.Color = Color3.new(0,0,0); s.Transparency = 0.5
+
+            -- BEAM (LINHA NA BARRIGA)
+            local att0 = hrp:FindFirstChild("KZZ_Att0") or Instance.new("Attachment", hrp)
+            att0.Name = "KZZ_Att0"
+            att0.Position = Vector3.new(0, 0, 0) -- Posição 0 é a BARRIGA
+
+            local att1 = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and Player.Character.HumanoidRootPart:FindFirstChild("KZZ_AttBase") or nil
+            if not att1 and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                att1 = Instance.new("Attachment", Player.Character.HumanoidRootPart)
+                att1.Name = "KZZ_AttBase"; att1.Position = Vector3.new(0, -3.5, 0) -- Sai do seu pé
+            end
+
+            local beam = hrp:FindFirstChild("KZZ_Beam") or Instance.new("Beam", hrp)
+            beam.Name = "KZZ_Beam"
+            beam.Attachment0 = att0
+            beam.Attachment1 = att1
+            beam.Width0 = 0.1
+            beam.Width1 = 0.1
+            beam.Color = ColorSequence.new(Color3.new(0,0,0))
+            beam.Transparency = NumberSequence.new(0.5)
+            beam.FaceCamera = true
+            beam.Enabled = getgenv().ESP_Lines
+        end
+    end)
+end
+
+-- AIMBOT
+local function GetClosest()
+    local t, d = nil, 500
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= Player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character.Humanoid.Health > 0 then
+            local p, vis = Camera:WorldToViewportPoint(v.Character.HumanoidRootPart.Position)
+            if vis then
+                local mag = (Vector2.new(p.X, p.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+                if mag < d then d = mag; t = v.Character.HumanoidRootPart end
+            end
+        end
+    end
+    return t
+end
+
+RunService.RenderStepped:Connect(function()
+    local target = GetClosest()
+    if target then
+        if getgenv().Aimbot_Lock then Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
+        elseif getgenv().Aimbot_Smooth then Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Position), 0.08) end
+    end
+end)
+
+for _, p in pairs(Players:GetPlayers()) do if p ~= Player then CreateESP(p) end end
+Players.PlayerAdded:Connect(function(p) if p ~= Player then CreateESP(p) end end)
